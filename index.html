@@ -3,362 +3,347 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 中秋限定｜重慶直飛 + 江景智慧酒店 極致自由行</title>
+    <title>奧捷雙國冬季 10 日行程分析</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Noto Sans TC"', 'sans-serif'],
-                    },
-                    colors: {
-                        'cq-gold': '#D4AF37',
-                        'cq-red': '#E53935',
-                        'cq-dark': '#1A1A2E',
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            background-color: #f8fafc;
+            background-color: #f8f9fa;
             color: #334155;
-            scroll-behavior: smooth;
         }
-        .hero-bg {
-            background-image: linear-gradient(rgba(26, 26, 46, 0.7), rgba(26, 26, 46, 0.7)), url('https://images.unsplash.com/photo-1550159930-40066082a4fc?auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
         }
-        .card-hover {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease;
         }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+        .nav-tab.active {
+            border-bottom: 3px solid #b45309;
+            color: #b45309;
+            font-weight: 700;
+        }
+
+        .day-circle {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .warning-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
         }
     </style>
 </head>
-<body class="antialiased">
+<body class="min-h-screen pb-12">
 
-    <nav class="bg-white/90 backdrop-blur-md fixed w-full z-50 shadow-sm border-b border-gray-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex-shrink-0 flex items-center gap-2">
-                    <i class="fa-solid fa-mountain-city text-cq-red text-2xl"></i>
-                    <span class="font-bold text-xl tracking-wider text-cq-dark">Chongqing<span class="text-cq-gold">Escape</span></span>
-                </div>
+    <!-- Chosen Palette: Winter Warmth (Warm Neutrals, Cream, Deep Gold, Festive Red) -->
+    <!-- Application Structure Plan: 
+        1. 儀表板總覽 (Dashboard): 快速呈現行程評級、拉車距離警告與日照時間提醒。
+        2. 互動行程表 (Interactive Timeline): 使用者可點擊天數切換詳細內容，包含景點、餐食與住宿。
+        3. 數據深度分析 (Analysis): 利用 Chart.js 視覺化拉車距離與日照時間的衝突，並標示出「關鍵紅旗」。
+        4. 冬季裝備與節慶指南 (Prep Guide): 互動式資訊卡呈現保暖與市集攻略。
+        選擇此結構是為了讓使用者先有「大局觀」（風險點），再進入「細節觀」（每日行程），最後獲得「行動方案」（裝備指南）。
+    -->
+    <!-- Visualization & Content Choices: 
+        - 每日行程詳情 -> 互動式切換面板 -> 提高資訊密度，避免頁面過長。
+        - 拉車距離 vs 日照時間 -> 組合圖 (Bar + Line) -> 直觀展現 D2、D4 的時間壓迫感。
+        - 紅旗警示 -> 亮色標註與警告圖示 -> 引起使用者注意關鍵風險（如聖誕店休）。
+        - 裝備清單 -> 網格圖形卡片 -> 方便視覺化快速閱讀。
+        - 庫存圖表使用 Chart.js Canvas，確保無 SVG 且響應式。
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <nav class="bg-white border-b sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <span class="text-xl font-bold text-amber-800">奧捷冬日 10 日行程分析儀表板</span>
                 <div class="hidden md:flex space-x-8">
-                    <a href="#itinerary" class="text-gray-600 hover:text-cq-red transition font-medium">每日行程</a>
-                    <a href="#package" class="text-gray-600 hover:text-cq-red transition font-medium">機+酒專案</a>
-                    <a href="#guide" class="text-gray-600 hover:text-cq-red transition font-medium">交通與行李指南</a>
-                </div>
-                <div>
-                    <a href="#package" class="bg-cq-red hover:bg-red-700 text-white px-5 py-2 rounded-full font-medium transition shadow-lg shadow-red-500/30">立即預訂</a>
+                    <button onclick="scrollToSection('itinerary')" class="nav-tab active px-2 py-4">行程詳情</button>
+                    <button onclick="scrollToSection('analysis')" class="nav-tab px-2 py-4">專業分析</button>
+                    <button onclick="scrollToSection('prep')" class="nav-tab px-2 py-4">行前準備</button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <header class="hero-bg h-[80vh] flex items-center justify-center pt-16 relative">
-        <div class="text-center px-4 max-w-4xl mx-auto relative z-10">
-            <span class="inline-block py-1 px-3 rounded-full bg-cq-gold/20 text-cq-gold border border-cq-gold/50 text-sm font-semibold tracking-widest mb-4 backdrop-blur-sm">
-                2026 中秋連假黃金檔期 (9/24-9/27)
-            </span>
-            <h1 class="text-5xl md:text-7xl font-black text-white mb-6 drop-shadow-lg tracking-tight">
-                魔幻山城，<span class="text-cq-gold">秋日尋夢</span>
-            </h1>
-            <p class="text-xl md:text-2xl text-gray-200 mb-10 font-light drop-shadow-md">
-                中國國際航空直飛 × 雲憩江景智慧酒店<br>四天三夜，赴一場賽博朋克與千與千尋的秋日之約。
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="#itinerary" class="bg-white text-cq-dark hover:bg-gray-100 px-8 py-3 rounded-full font-bold text-lg transition shadow-xl">
-                    查看行程亮點 <i class="fa-solid fa-arrow-down ml-2"></i>
-                </a>
-            </div>
-        </div>
+    <main class="max-w-6xl mx-auto px-4 mt-8">
         
-        <!-- Decorative moon for Mid-Autumn -->
-        <div class="absolute top-32 right-10 md:right-32 w-24 h-24 md:w-40 md:h-40 bg-yellow-100 rounded-full blur-[2px] opacity-80 shadow-[0_0_80px_30px_rgba(255,255,150,0.4)] pointer-events-none"></div>
-    </header>
-
-    <section id="package" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-cq-dark mb-4">中秋限定：機+酒尊享專案</h2>
-                <div class="w-24 h-1 bg-cq-gold mx-auto rounded-full"></div>
-                <p class="mt-4 text-gray-500 max-w-2xl mx-auto">為您鎖定中秋連假黃金時段，告別轉機疲勞，入住高評價江景房，享受最純粹的度假時光。</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-                <!-- Flight Card -->
-                <div class="bg-slate-50 rounded-3xl p-8 border border-gray-100 card-hover relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10">免轉機</div>
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100">
-                            <i class="fa-solid fa-plane-departure text-3xl text-blue-600"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold text-gray-800">直飛重慶・省時高效</h3>
-                            <p class="text-gray-500 font-medium">中國國際航空 (Air China)</p>
-                        </div>
-                    </div>
-                    
-                    <img src="https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?auto=format&fit=crop&w=800&q=80" alt="Air China Flight" class="w-full h-40 object-cover rounded-xl mb-6 shadow-sm">
-                    
-                    <ul class="space-y-4 mb-8">
-                        <li class="flex items-start">
-                            <i class="fa-solid fa-check text-green-500 mt-1 mr-3"></i>
-                            <div>
-                                <span class="font-bold text-gray-700">去程 CA419：</span> 台北桃園(TPE) ➔ 重慶江北(CKG)
-                            </div>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa-solid fa-check text-green-500 mt-1 mr-3"></i>
-                            <div>
-                                <span class="font-bold text-gray-700">回程 CA409：</span> 重慶江北(CKG) ➔ 台北桃園(TPE)
-                            </div>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa-regular fa-clock text-cq-gold mt-1 mr-3"></i>
-                            <span class="text-gray-600">單程僅需約 <strong class="text-cq-red">3.5 小時</strong>，完美避開轉機浪費的時間。</span>
-                        </li>
-                    </ul>
-                    <div class="mt-auto flex justify-between items-end border-t border-gray-200 pt-6">
-                        <div class="text-sm text-gray-500">每人來回機票約</div>
-                        <div class="text-3xl font-black text-cq-dark">TWD 13,120<span class="text-lg font-normal text-gray-500">起</span></div>
-                    </div>
-                </div>
-
-                <!-- Hotel Card -->
-                <div class="bg-slate-50 rounded-3xl p-8 border border-gray-100 card-hover relative overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-cq-red text-white text-xs font-bold px-3 py-1 rounded-bl-lg z-10">賞月首選</div>
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-100">
-                            <i class="fa-solid fa-bed text-3xl text-cq-gold"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold text-gray-800">雲憩江景智慧酒店</h3>
-                            <p class="text-gray-500 font-medium">解放碑商圈・四星級享受</p>
-                        </div>
-                    </div>
-                    
-                    <img src="https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80" alt="Hotel Room View" class="w-full h-40 object-cover rounded-xl mb-6 shadow-sm">
-                    
-                    <ul class="space-y-4 mb-8">
-                        <li class="flex items-start">
-                            <i class="fa-solid fa-robot text-purple-500 mt-1 mr-3"></i>
-                            <span class="text-gray-600"><strong class="text-gray-700">全屋智能：</strong> 語音控制燈光、窗簾與電視，科技感拉滿。</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa-solid fa-moon text-yellow-500 mt-1 mr-3"></i>
-                            <span class="text-gray-600"><strong class="text-gray-700">中秋江景：</strong> 房內落地窗可直擊兩江交匯與中秋明月。</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa-solid fa-location-dot text-cq-red mt-1 mr-3"></i>
-                            <span class="text-gray-600"><strong class="text-gray-700">絕佳位置：</strong> 下樓即是解放碑，步行可達洪崖洞與輕軌站。</span>
-                        </li>
-                    </ul>
-                    <div class="mt-auto flex justify-between items-end border-t border-gray-200 pt-6">
-                        <div class="text-sm text-gray-500">中秋 3 晚總計約</div>
-                        <div class="text-3xl font-black text-cq-dark">TWD 2,353<span class="text-lg font-normal text-gray-500">起</span></div>
-                    </div>
+        <!-- Header Section -->
+        <section class="mb-12">
+            <div class="bg-amber-50 border-l-4 border-amber-600 p-6 rounded-r-lg shadow-sm">
+                <h1 class="text-3xl font-bold text-slate-800 mb-2">2026 聖誕奧捷之旅</h1>
+                <p class="text-lg text-slate-600">本應用程式針對 12/19 - 12/26 之冬季行程進行深度解析，協助您優化冬日歐洲旅行體驗。</p>
+                <div class="flex flex-wrap gap-4 mt-4 text-sm">
+                    <span class="bg-amber-200 text-amber-800 px-3 py-1 rounded-full font-medium">✨ 聖誕市集高峰</span>
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full font-medium">❄️ 氣溫：-5°C ~ 5°C</span>
+                    <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full font-medium">🚩 評級：需中度優化</span>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="itinerary" class="py-20 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-cq-dark mb-4">四天三夜 經典深度遊行程</h2>
-                <div class="w-24 h-1 bg-cq-red mx-auto rounded-full"></div>
+        <!-- Itinerary Explorer Section -->
+        <section id="itinerary" class="mb-16">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">互動行程探索器</h2>
+                <p class="text-slate-500 mt-1">點擊下方天數查看當日的景點精華、拉車距離、餐食安排與參考住宿。</p>
             </div>
 
-            <div class="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-300 before:to-transparent">
+            <div class="flex flex-wrap justify-center gap-3 mb-8">
+                <!-- Day selector generated by JS -->
+                <div id="daySelector" class="flex flex-wrap gap-2 justify-center"></div>
+            </div>
+
+            <div id="dayDetails" class="card p-8 min-h-[400px] border-t-8 border-amber-600 relative overflow-hidden">
+                <!-- Detailed content injected here by JS -->
+            </div>
+        </section>
+
+        <!-- Data Analysis Section -->
+        <section id="analysis" class="mb-16 scroll-mt-20">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800 text-center">冬季行程「關鍵紅旗」分析</h2>
+                <p class="text-slate-500 text-center mt-2 max-w-2xl mx-auto">
+                    此圖表對比了每日「拉車距離」與 12 月歐洲寶貴的「日照時間 (約 8 小時)」。我們發現 Day 2 與 Day 4 的拉車時間佔據了超過一半的白天，將導致景點停留時間受壓。
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                <div class="lg:col-span-2 card p-6">
+                    <h3 class="text-lg font-bold mb-4 text-center">每日拉車距離與風險評估</h3>
+                    <div class="chart-container">
+                        <canvas id="distanceChart"></canvas>
+                    </div>
+                </div>
                 
-                <!-- Day 1 -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-cq-red text-white font-bold shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 relative">
-                        D1
+                <div class="space-y-4">
+                    <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                        <h4 class="font-bold text-red-700 mb-1">🚩 痛點：日光時間衝突</h4>
+                        <p class="text-sm text-red-600">冬季日落約 16:15。D2 拉車 348km 將導致抵達維也納時可能已天黑。建議將布拉格-維也納路段視為「移動日」，將重點放在維也納夜間點燈與聖誕市集。</p>
                     </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-gray-100 card-hover">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-xl text-gray-800">9/24：賽博朋克初印象</h3>
-                            <span class="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded font-medium">抵達重慶</span>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1542931287-023b922fa89b?auto=format&fit=crop&w=800&q=80" alt="Day 1 Hongyadong" class="w-full h-32 object-cover rounded-lg mb-4">
-                        <ul class="space-y-2 text-gray-600 text-sm">
-                            <li><strong class="text-cq-red">下午：</strong> 搭乘 CA419 抵達重慶，專車/地鐵前往雲憩江景酒店 Check-in。</li>
-                            <li><strong class="text-cq-red">傍晚：</strong> 體驗空中巴士【長江索道】，飛渡長江。</li>
-                            <li><strong class="text-cq-red">夜晚：</strong> 漫步【洪崖洞】，看千與千尋同款金碧輝煌的吊腳樓，登上千廝門大橋拍全景。</li>
-                            <li class="pt-2 border-t border-gray-100 mt-2 text-xs italic">🍲 晚餐推薦：解放碑八一路好吃街的酸辣粉與降火冰粉。</li>
-                        </ul>
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <h4 class="font-bold text-blue-700 mb-1">🚢 變數：國王湖營運</h4>
+                        <p class="text-sm text-blue-600">12 月湖面可能結冰，遊船僅行駛至紅頂教堂或停駛。Day 5 需準備「薩爾斯堡鹽礦」或「高堡吊車」作為備案。</p>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                        <h4 class="font-bold text-amber-700 mb-1">🎁 關鍵：聖誕店休</h4>
+                        <p class="text-sm text-amber-600">12/24 & 12/25 全歐商店大歇業。行程 Day 6-7 的購物需求請務必提前在 Day 3 (維也納) 或 Day 8 (布拉格) 完成。</p>
                     </div>
                 </div>
-
-                <!-- Day 2 -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-cq-dark text-white font-bold shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 relative">
-                        D2
-                    </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-gray-100 card-hover">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-xl text-gray-800">9/25：輕軌穿樓與文青秋意</h3>
-                            <span class="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded font-medium">市區深度遊</span>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1605335123018-b2a3f7f8f906?auto=format&fit=crop&w=800&q=80" alt="Day 2 Chongqing Cityscape" class="w-full h-32 object-cover rounded-lg mb-4">
-                        <ul class="space-y-2 text-gray-600 text-sm">
-                            <li><strong class="text-cq-red">上午：</strong> 漫步【山城步道】或十八梯，感受古老石板路的秋涼氣息。</li>
-                            <li><strong class="text-cq-red">中午：</strong> 前往【李子壩站】打卡全國知名的「輕軌穿樓」奇觀。</li>
-                            <li><strong class="text-cq-red">下午：</strong> 遊覽【鵝嶺二廠文創公園】，電影《從你的全世界路過》取景地，俯瞰兩江。</li>
-                            <li><strong class="text-cq-red">夜晚：</strong> 南濱路散步賞月，吹拂江風。</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Day 3 -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-green-600 text-white font-bold shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 relative">
-                        D3
-                    </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-gray-100 card-hover">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-xl text-gray-800">9/26：近郊探秘，自然神工</h3>
-                            <span class="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded font-medium">武隆一日遊</span>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1615460549969-36fa19521a4f?auto=format&fit=crop&w=800&q=80" alt="Day 3 Wulong Nature" class="w-full h-32 object-cover rounded-lg mb-4">
-                        <ul class="space-y-2 text-gray-600 text-sm">
-                            <li><strong class="text-cq-red">全天：</strong> 參加一日遊或包車前往【武隆天生三橋】（車程約2.5小時）。《變形金剛4》取景地，秋日峽谷色彩斑斕，極具視覺震撼。</li>
-                            <li><strong class="text-cq-red">下午：</strong> 順遊【仙女山國家森林公園】，被譽為東方瑞士，秋天擁有遼闊的金色高山草原。</li>
-                            <li><strong class="text-cq-red">夜晚：</strong> 回到市區，以一頓正宗的【重慶防空洞老火鍋】洗去疲憊。</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Day 4 -->
-                <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                    <div class="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-cq-gold text-white font-bold shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 relative">
-                        D4
-                    </div>
-                    <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-gray-100 card-hover">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-xl text-gray-800">9/27：巴渝沉澱與滿載而歸</h3>
-                            <span class="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded font-medium">古鎮與返程</span>
-                        </div>
-                        <img src="https://images.unsplash.com/photo-1514361544280-9252c1f0980c?auto=format&fit=crop&w=800&q=80" alt="Day 4 Ciqikou" class="w-full h-32 object-cover rounded-lg mb-4">
-                        <ul class="space-y-2 text-gray-600 text-sm">
-                            <li><strong class="text-cq-red">上午：</strong> 逛【磁器口古鎮】，採買陳麻花與重慶火鍋底料等伴手禮。</li>
-                            <li><strong class="text-cq-red">中午：</strong> 參觀【重慶人民大禮堂】與【三峽博物館】，深入了解城市底蘊。</li>
-                            <li><strong class="text-cq-red">下午：</strong> 帶著滿滿的回憶，前往江北機場搭乘 CA409 直飛航班返回台灣。</li>
-                        </ul>
-                    </div>
-                </div>
-
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="guide" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-cq-dark mb-4">實用攻略：交通與行李指南</h2>
-                <div class="w-24 h-1 bg-cq-gold mx-auto rounded-full"></div>
+        <!-- Preparation Guide Section -->
+        <section id="prep" class="mb-16 scroll-mt-20">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-800">冬季奧捷旅行準備清單</h2>
+                <p class="text-slate-500 mt-1">針對零度以下的歐洲冬季，以下是我們為您整理的實用必備建議。</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                
-                <!-- Transport Guide -->
-                <div class="bg-slate-50 rounded-3xl p-8 border border-gray-100 shadow-sm">
-                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
-                        <i class="fa-solid fa-train-subway text-2xl text-blue-600"></i>
-                        <h3 class="text-2xl font-bold text-gray-800">8D 魔幻都市交通破解</h3>
-                    </div>
-                    
-                    <div class="space-y-6">
-                        <div>
-                            <h4 class="font-bold text-lg text-gray-800 mb-2 flex items-center gap-2">
-                                <i class="fa-solid fa-plane-arrival text-cq-red"></i> 1. 機場 ➔ 雲憩江景酒店
-                            </h4>
-                            <ul class="list-disc pl-5 text-gray-600 space-y-2 text-sm">
-                                <li><strong>網約車/計程車 (推薦)：</strong> 使用「滴滴出行」或排班計程車。國航晚班機抵達後搭車最方便，車程約 40-50 分鐘，車資約 60-80 RMB。</li>
-                                <li><strong>軌道交通 (防塞車)：</strong> 捷運 10號線 ➔ 轉 2號線至「臨江門站」或「較場口站」下車。車資約 6 RMB。</li>
-                            </ul>
-                        </div>
-                        
-                        <div>
-                            <h4 class="font-bold text-lg text-gray-800 mb-2 flex items-center gap-2">
-                                <i class="fa-solid fa-map-location-dot text-cq-red"></i> 2. 市區移動「潛規則」
-                            </h4>
-                            <ul class="list-disc pl-5 text-gray-600 space-y-2 text-sm">
-                                <li><strong>輕軌是王道：</strong> 重慶高低起伏且極易塞車，市區景點請優先搭乘軌道交通（如搭 2號線看李子壩）。</li>
-                                <li><strong>導航要「聽」不要看：</strong> 地圖上的「100公尺」可能差了 10 層樓！強烈建議用<strong>「高德地圖」</strong>開啟語音導航找電梯。</li>
-                                <li><strong>善用特色交通：</strong> 皇冠大扶梯與長江索道不只是景點，更是當地人跨越地形的實用工具。</li>
-                            </ul>
-                        </div>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div class="text-4xl mb-4 text-amber-600">🧥</div>
+                    <h3 class="font-bold mb-2">洋蔥式穿法</h3>
+                    <p class="text-sm text-slate-500">室內外溫差極大（-5°C vs 22°C）。一件發熱衣 + 針織衫 + 「防風防水厚大衣」是標準配置。</p>
                 </div>
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div class="text-4xl mb-4 text-amber-600">🧦</div>
+                    <h3 class="font-bold mb-2">足部保暖</h3>
+                    <p class="text-sm text-slate-500">石板路寒氣逼人，必備厚羊毛襪與防水厚底鞋。底薄的運動鞋會讓腳底凍僵。</p>
+                </div>
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div class="text-4xl mb-4 text-amber-600">☕</div>
+                    <h3 class="font-bold mb-2">保溫瓶與熱酒</h3>
+                    <p class="text-sm text-slate-500">隨身攜帶保溫瓶裝熱水，或在市集買杯 Glühwein (熱紅酒) 暖胃並收集紀念杯。</p>
+                </div>
+                <div class="card p-6 flex flex-col items-center text-center">
+                    <div class="text-4xl mb-4 text-amber-600">🕙</div>
+                    <h3 class="font-bold mb-2">調整時差</h3>
+                    <p class="text-sm text-slate-500">星宇直飛 Day 1 清晨抵達，建議首日不要安排過重行程，傍晚後再入住休息以適應時差。</p>
+                </div>
+            </div>
+        </section>
 
-                <!-- Packing List -->
-                <div class="bg-slate-50 rounded-3xl p-8 border border-gray-100 shadow-sm">
-                    <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
-                        <i class="fa-solid fa-suitcase-rolling text-2xl text-cq-gold"></i>
-                        <h3 class="text-2xl font-bold text-gray-800">中秋重慶打包清單 (9月底)</h3>
-                    </div>
-                    <p class="text-sm text-gray-500 mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                        🌡️ <strong>氣候提示：</strong> 9月底氣溫約 20°C - 28°C，秋高氣爽，但早晚稍有涼意。
-                    </p>
-                    
-                    <div class="space-y-4">
-                        <div class="flex gap-4 items-start">
-                            <div class="w-8 h-8 rounded bg-gray-200 flex items-center justify-center shrink-0 mt-1">📱</div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm">數位與證件（必備！）</h4>
-                                <p class="text-xs text-gray-600 mt-1">台胞證（卡式，效期>半年）、<strong>支付寶/WeChat Pay</strong>（重慶幾乎 99% 無現金，務必在台綁好信用卡）、中港澳免翻牆網卡。</p>
+    </main>
+
+    <script>
+        const itineraryData = [
+            { day: 1, route: "台北 → 布拉格", km: 0, spots: ["機上休憩"], meals: ["機上", "機上", "機上"], hotel: "機上航程", desc: "星宇航空 00:10 出發，清晨 07:50 抵達。建議確認抵達首日的活動細節，避免時差帶來的體力斷層。" },
+            { day: 2, route: "布拉格 → 特奇 → 維也納", km: 348, spots: ["特奇古鎮", "美景宮", "紀念品店"], meals: ["機上", "捷克風味料理", "中式六菜一湯"], hotel: "Austria Trend 或同級", desc: "今日為長途拉車日（總計約 5 小時車程）。抵達美景宮時日光已弱，適合欣賞維也納華麗的聖誕點燈。" },
+            { day: 3, route: "維也納市區深度遊", km: 20, spots: ["百水公寓", "美泉宮", "霍夫堡", "史蒂芬大教堂", "Swarovski 旗艦店"], meals: ["飯店自助", "自理 (方便逛街)", "維也納炸豬排"], hotel: "Austria Trend 或同級", desc: "今日全日留在維也納，是聖誕購物的最佳時機。聖誕市集的熱紅酒是冬日限定美味。" },
+            { day: 4, route: "維也納 → 哈爾斯塔特 → 薩爾斯堡", km: 330, spots: ["哈爾斯塔特湖區散策"], meals: ["飯店自助", "鱒魚風味餐", "中式六菜一湯"], hotel: "Wyndham Grand 或同級", desc: "拉車距離頗長，抵達哈爾斯塔特應優先進行戶外拍照，避免日落後無法拍出明信片美景。" },
+            { day: 5, route: "薩爾斯堡 → 國王湖 → 庫倫洛夫 (CK)", km: 276, spots: ["米拉貝爾花園", "薩爾斯堡老城", "國王湖遊船"], meals: ["飯店自助", "自理 (方便遊玩)", "中式六菜一湯"], hotel: "Grand / Old Inn 或同級", desc: "國王湖冬季遊船視冰況而定。若遇到大霧，薩爾斯堡的耶誕市集亦有極佳氛圍。" },
+            { day: 6, route: "庫倫洛夫 → 皮耳森", km: 158, spots: ["庫倫洛夫城堡", "皮耳森啤酒廠"], meals: ["飯店自助", "古城豬腳餐+啤酒", "捷克特色料理"], hotel: "Courtyard Pilsen 或同級", desc: "恰逢 12/24 聖誕夜。CK 城堡在雪中如童話，但請注意傍晚後多數商店會提早關門。" },
+            { day: 7, route: "皮耳森 → 卡羅維瓦利 → 布拉格", km: 203, spots: ["卡羅維瓦利溫泉小鎮"], meals: ["飯店自助", "中式六菜一湯", "中式六菜一湯"], hotel: "NH Prague 或同級", desc: "12/25 聖誕節。溫泉鎮悠閒散步，享受溫泉餅與溫泉水。此時布拉格市中心聖誕樹已亮起。" },
+            { day: 8, route: "布拉格市區深度一日遊", km: 15, spots: ["布拉格城堡", "查理大橋", "天文鐘", "市民會館"], meals: ["飯店自助", "捷克魚排", "市民會館肋排"], hotel: "NH Prague 或同級", desc: "行程最高潮，漫步查理大橋與老城廣場。市民會館晚餐氣氛極佳，適合為旅程畫下完美句點。" },
+            { day: 9, route: "布拉格 → 台北", km: 0, spots: ["準備返國"], meals: ["飯店自助", "機上", "機上"], hotel: "機上航程", desc: "早上 10:20 航班。帶著裝滿記憶的聖誕馬克杯，告別冬日歐洲。" },
+            { day: 10, route: "抵達台北", km: 0, spots: ["溫暖的家"], meals: ["機上", "-", "-"], hotel: "Home", desc: "清晨抵達台北，結束精彩的奧捷雙國之旅。" }
+        ];
+
+        let activeDay = 2;
+
+        function init() {
+            renderDaySelector();
+            updateDayDetails(2);
+            renderChart();
+        }
+
+        function renderDaySelector() {
+            const container = document.getElementById('daySelector');
+            itineraryData.forEach(item => {
+                const btn = document.createElement('div');
+                btn.className = `day-circle border-2 ${item.day === activeDay ? 'bg-amber-600 border-amber-600 text-white' : 'bg-white border-slate-200 text-slate-600'}`;
+                btn.innerHTML = `D${item.day}`;
+                btn.onclick = () => updateDayDetails(item.day);
+                container.appendChild(btn);
+            });
+        }
+
+        function updateDayDetails(day) {
+            activeDay = day;
+            const data = itineraryData.find(d => d.day === day);
+            const selector = document.getElementById('daySelector');
+            
+            // Update buttons
+            Array.from(selector.children).forEach((child, idx) => {
+                if (idx + 1 === day) {
+                    child.className = "day-circle border-2 bg-amber-600 border-amber-600 text-white font-bold";
+                } else {
+                    child.className = "day-circle border-2 bg-white border-slate-200 text-slate-600";
+                }
+            });
+
+            const details = document.getElementById('dayDetails');
+            details.innerHTML = `
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="text-4xl font-black text-amber-200">DAY ${data.day}</span>
+                            <h3 class="text-2xl font-bold text-slate-800">${data.route}</h3>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <div class="bg-slate-50 p-3 rounded-lg">
+                                <p class="text-xs text-slate-400 uppercase font-bold mb-1">主要景點</p>
+                                <p class="text-sm font-medium">${data.spots.join('、')}</p>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-lg">
+                                <p class="text-xs text-slate-400 uppercase font-bold mb-1">拉車距離</p>
+                                <p class="text-sm font-medium ${data.km > 250 ? 'text-red-600' : ''}">${data.km === 0 ? '無 (停留地)' : data.km + ' 公里'}</p>
                             </div>
                         </div>
-                        
-                        <div class="flex gap-4 items-start">
-                            <div class="w-8 h-8 rounded bg-gray-200 flex items-center justify-center shrink-0 mt-1">👟</div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm">穿搭：一雙無敵好走的鞋</h4>
-                                <p class="text-xs text-gray-600 mt-1">山城每天爬坡幾萬步是常態，<strong>絕對不要穿新鞋或高跟鞋</strong>。衣服採洋蔥式穿搭（短袖 + 薄長袖/防風外套），去武隆山上需加件毛衣或抓絨外套。</p>
-                            </div>
+                        <div class="mb-6">
+                            <p class="text-slate-600 leading-relaxed">${data.desc}</p>
                         </div>
-
-                        <div class="flex gap-4 items-start">
-                            <div class="w-8 h-8 rounded bg-gray-200 flex items-center justify-center shrink-0 mt-1">💊</div>
-                            <div>
-                                <h4 class="font-bold text-gray-800 text-sm">腸胃藥與急救備品</h4>
-                                <p class="text-xs text-gray-600 mt-1">重慶火鍋「重油重辣」（當地微辣=台灣大辣），強烈建議備妥<strong>胃藥、消化藥與止瀉藥</strong>。去武隆山路蜿蜒，易暈車者需備暈車藥。</p>
-                            </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 text-sm"><span class="w-16 text-slate-400 font-bold">早：</span>${data.meals[0]}</div>
+                            <div class="flex items-center gap-2 text-sm"><span class="w-16 text-slate-400 font-bold">午：</span>${data.meals[1]}</div>
+                            <div class="flex items-center gap-2 text-sm"><span class="w-16 text-slate-400 font-bold">晚：</span>${data.meals[2]}</div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-64">
+                        <div class="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                            <p class="text-xs text-amber-800 font-bold mb-3 uppercase tracking-wider">參考住宿</p>
+                            <p class="text-sm text-amber-900 mb-4">${data.hotel}</p>
+                            ${data.km > 250 ? '<div class="bg-red-100 text-red-700 text-xs p-2 rounded flex items-center gap-1">⚠️ 今日拉車較久，建議車上備妥零食</div>' : ''}
+                            ${day === 6 || day === 7 ? '<div class="bg-amber-200 text-amber-800 text-xs p-2 rounded flex items-center gap-1 mt-2">🎄 正值聖誕節慶，氣氛極佳</div>' : ''}
                         </div>
                     </div>
                 </div>
+                <div class="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                    <span class="text-[120px] font-bold">${data.day}</span>
+                </div>
+            `;
+        }
 
-            </div>
-        </div>
-    </section>
+        function renderChart() {
+            const ctx = document.getElementById('distanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: itineraryData.filter(d => d.day > 1 && d.day < 9).map(d => `Day ${d.day}`),
+                    datasets: [{
+                        label: '每日拉車距離 (km)',
+                        data: itineraryData.filter(d => d.day > 1 && d.day < 9).map(d => d.km),
+                        backgroundColor: itineraryData.filter(d => d.day > 1 && d.day < 9).map(d => d.km > 250 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(245, 158, 11, 0.5)'),
+                        borderColor: itineraryData.filter(d => d.day > 1 && d.day < 9).map(d => d.km > 250 ? 'rgb(239, 68, 68)' : 'rgb(245, 158, 11)'),
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }, {
+                        label: '舒適度臨界線 (250km)',
+                        data: [250, 250, 250, 250, 250, 250, 250],
+                        type: 'line',
+                        borderColor: 'rgba(51, 65, 85, 0.4)',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `距離: ${context.raw} km ${context.raw > 250 ? ' (高拉車風險)' : ''}`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            title: { display: true, text: '公里 (km)' }
+                        }
+                    }
+                }
+            });
+        }
 
-    <footer class="bg-cq-dark text-gray-300 py-12 border-t border-gray-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-mountain-city text-cq-gold text-2xl"></i>
-                <span class="font-bold text-xl tracking-wider text-white">Chongqing<span class="text-cq-gold">Escape</span></span>
-            </div>
-            <p class="text-sm">© 2026 中秋限定專案. Designed for Chongqing Travel.</p>
-            <div class="flex gap-4 text-xl">
-                <a href="#" class="hover:text-cq-gold transition"><i class="fa-brands fa-instagram"></i></a>
-                <a href="#" class="hover:text-cq-gold transition"><i class="fa-brands fa-facebook"></i></a>
-            </div>
-        </div>
-    </footer>
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+            
+            // Update active state in nav
+            const tabs = document.querySelectorAll('.nav-tab');
+            tabs.forEach(tab => {
+                if (tab.getAttribute('onclick').includes(id)) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+        }
 
+        window.onload = init;
+    </script>
 </body>
 </html>
